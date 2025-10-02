@@ -127,43 +127,22 @@ router.route('/personal-address')
 // Express example
 // Example: session cookie named "sid"
 // /api/user/auth/logout
+const logoutUser = require('../utils/logoutUser');
+
 router.get('/auth/*', (req, res) => {
-  const fullPath = req.params[0]; // Gets everything after /auth/
-  
-  // If it looks like a URL, extract the domain and handle accordingly
+  const fullPath = req.params[0];
+
   if (fullPath.startsWith('https://')) {
     const urlObj = new URL(fullPath);
-    const domain = urlObj.hostname;
-    
-    // Use provided redirect or default to login page on that domain
     const redirectUrl = req.query.redirect || `${urlObj.origin}/login.html`;
-    
-    // Clear cookies and redirect
-    const isProd = process.env.NODE_ENV === 'production';
-    const cookieOpts = {
-      httpOnly: true,
-      path: '/',
-      sameSite: 'none',
-      secure: true,
-      domain: '.auravestfinedge.com',
-    };
 
-    if (!isProd && (process.env.SAME_ORIGIN_DEV === '1')) {
-      cookieOpts.sameSite = 'lax';
-      cookieOpts.secure = false;
-    }
-
-    res.clearCookie('sid', cookieOpts);
-    res.set({
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      Pragma: 'no-cache',
-    });
+    logoutUser(req, res); // ✅ shared logic
 
     return res.redirect(302, redirectUrl);
   }
-  
-  // If not a URL, proceed to normal logout
-  return require('./logoutHandler')(req, res); // or your existing logout logic
+
+  // Fallback to standard logout
+  return require('./logoutHandler')(req, res);
 });
 
 
