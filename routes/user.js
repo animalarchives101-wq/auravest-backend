@@ -127,44 +127,44 @@ router.route('/personal-address')
 // Express example
 // Example: session cookie named "sid"
 // /api/user/auth/logout
-router.get('/auth/logout', (req, res) => {
-  const isProd = process.env.NODE_ENV === 'production';
+router.get('/auth/*', (req, res) => {
+  const fullPath = req.params[0]; // Gets everything after /auth/
+  
+  // If it looks like a URL, extract the domain and handle accordingly
+  if (fullPath.startsWith('https://')) {
+    const urlObj = new URL(fullPath);
+    const domain = urlObj.hostname;
+    
+    // Use provided redirect or default to login page on that domain
+    const redirectUrl = req.query.redirect || `${urlObj.origin}/login.html`;
+    
+    // Clear cookies and redirect
+    const isProd = process.env.NODE_ENV === 'production';
+    const cookieOpts = {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'none',
+      secure: true,
+      domain: '.auravestfinedge.com',
+    };
 
-  // Must MATCH how you set the cookie in loginUser
-  const cookieOpts = {
-    httpOnly: true,
-    path: '/',
-    sameSite: 'none',
-    secure: true,
-    // domain: '.yourdomain.com', // uncomment & set if you used a domain when setting the cookie
-  };
+    if (!isProd && (process.env.SAME_ORIGIN_DEV === '1')) {
+      cookieOpts.sameSite = 'lax';
+      cookieOpts.secure = false;
+    }
 
-  // Local same-origin DEV mode: match the fallback you used in login
-  if (!isProd && (process.env.SAME_ORIGIN_DEV === '1')) {
-    cookieOpts.sameSite = 'lax';
-    cookieOpts.secure = false;
+    res.clearCookie('sid', cookieOpts);
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      Pragma: 'no-cache',
+    });
+
+    return res.redirect(302, redirectUrl);
   }
-
-  // Clear primary session cookie
-  res.clearCookie('sid', cookieOpts);
-
-  // (Optional) belt-and-suspenders clear in case attributes ever drift
-  // res.clearCookie('sid', { httpOnly: true, path: '/' });
-
-  // Prevent caches from keeping “logged-in” pages
-  res.set({
-    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-    Pragma: 'no-cache',
-  });
-
-  // Optional redirect param support (e.g., /auth/logout?redirect=/login.html)
-  const to = typeof req.query.redirect === 'string' ? req.query.redirect : '';
-  if (to) return res.redirect(302, to);
-
-  // If called via fetch(), this is perfect:
-  return res.status(204).end();
+  
+  // If not a URL, proceed to normal logout
+  return require('./logoutHandler')(req, res); // or your existing logout logic
 });
-
 
 
 module.exports=router
