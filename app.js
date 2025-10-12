@@ -29,7 +29,7 @@ app.use(cookieParser());
 
 // ✅ CORS: allow your exact frontend origin and credentials
 app.use(cors({
-  origin: ['http://127.0.0.1:5500', 'http://localhost:5500','https://www.auravestfinedge.com','https://auravestfinedge.com'], // allow both to avoid IP/host mismatch pain
+  origin: ['http://127.0.0.1:5500', 'http://localhost:5500','https://www.auravestfinedge.com','https://auravestfinedge.com','http://localhost:3000'], // allow both to avoid IP/host mismatch pain
   credentials: true,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
