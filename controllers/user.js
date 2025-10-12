@@ -628,6 +628,7 @@ const paymentRequest = async (req, res) => {
 
     // Extract data from the request body
     const { recipientEmail, currency, amount, note } = req.body;
+    console.log(req.body)
 
     // Validate required fields
     if (!recipientEmail || !currency || !amount) {
@@ -643,7 +644,7 @@ const paymentRequest = async (req, res) => {
     // Create the payment request
     const paymentRequest = await PaymentRequestModel.create({
         senderEmail: user.email,
-        recipientEmail: recipientEmail,
+        userEmail: recipientEmail,
         currency: currency,
         amount: amount,
         note: note,

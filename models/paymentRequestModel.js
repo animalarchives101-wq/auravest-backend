@@ -3,7 +3,7 @@ const mongoose=require('mongoose')
 
 
 const paymentRequestSchema=new mongoose.Schema({
-    rsenderEmail:{
+    senderEmail:{
         type:String,
         required:true
     },
